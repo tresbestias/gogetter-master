@@ -144,10 +144,25 @@ const fetchGoogleMailContent = async function (last_synced_date) {
         }
     }
 
-}
+};
+
+const clearMail = async function () {
+    let device;
+    try {
+        device = await deviceDao.searchDevice("mail");
+        if (device) {
+            await searchableDao.clearSearchables(device.id);
+            await deviceDao.removeDevice(device.id);
+        }
+    } catch (e) {
+        return null;
+    }
+};
+
 
 module.exports.fetchGoogleMailContent = fetchGoogleMailContent;
 module.exports.getGoogleMailRedirectUrl = getGoogleMailRedirectUrl;
 module.exports.loginGoogleMailKey = loginGoogleMailKey;
 module.exports.fetchGoogleMailContent = fetchGoogleMailContent;
+module.exports.clearMail = clearMail;
 

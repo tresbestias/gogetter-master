@@ -14,9 +14,14 @@ router.get('/drive-login', async function (req, res, next) {
     res.send(newVar);
 });
 
+router.get('/remove-drive', async function (req, res, next) {
+    await googleDriveUtils.clearDrive();
+    res.send({"ack":true});
+});
+
 router.get('/mail-redirect-url', async function (req, res, next) {
     let newVar = googleMailUtils.getGoogleMailRedirectUrl();
-    res.send(newVar);
+    res.redirect(newVar);
 });
 
 router.get('/mail-login', async function (req, res, next) {
@@ -25,8 +30,8 @@ router.get('/mail-login', async function (req, res, next) {
     res.send(newVar);
 });
 
-router.get('/remove-drive', async function (req, res, next) {
-    await googleDriveUtils.clearDrive();
+router.get('/remove-mail', async function (req, res, next) {
+    await googleMailUtils.clearMails();
     res.send({"ack":true});
 });
 
