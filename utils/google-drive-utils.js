@@ -3,7 +3,6 @@ const SCOPES = ['https://www.googleapis.com/auth/drive'];
 const deviceDao = require("../dao/device-dao");
 const searchableDao = require("../dao/searchable-dao");
 const config = require("../config");
-const loginutils = require("./accounts-login")
 
 const getOAuth2Client = function () {
     const {client_secret, client_id} = config.GOOGLE_CREDENTIALS;
@@ -19,14 +18,14 @@ const authorize = function (device) {
 };
 
 const getGoogleDriveRedirectUrl = function () {
-    return loginutils.getOAuth2Client().generateAuthUrl({
+    return getOAuth2Client().generateAuthUrl({
         access_type: 'offline',
         scope: SCOPES
     });
 };
 
 const loginGoogleDriveKey = async function (tokenCode) {
-    let oAuth2Client = loginutils.getOAuth2Client();
+    let oAuth2Client = getOAuth2Client();
     let {tokens} = await oAuth2Client.getToken(tokenCode);
     let device = await deviceDao.searchDevice("drive");
     if (!device) {
@@ -47,7 +46,7 @@ const fetchGoogleDriveData = async function () {
         if (!device) {
             // do nothing
         } else {
-            let oAuth2Client = loginutils.authorize(device);
+            let oAuth2Client = authorize(device);
             await oAuth2Client.refreshAccessToken()
             let drive = google.drive({version: 'v3', auth: oAuth2Client});
             let deletedFiles = [];
@@ -157,7 +156,7 @@ const createDownloadableUrl = async function (searchable) {
     if (!device || device.active === false) {
         return null;
     }
-    let oAuth2Client = loginutils.authorize(device);
+    let oAuth2Client = authorize(device);
     let drive = google.drive({version: 'v3', auth: oAuth2Client});
     let resp = await new Promise((resolve, reject) => {
         drive.files.get({

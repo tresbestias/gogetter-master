@@ -3,7 +3,6 @@ const SCOPES = ['https://www.googleapis.com/auth/gmail.readonly'];
 const deviceDao = require("../dao/device-dao");
 const searchableDao = require("../dao/searchable-dao");
 const config = require("../config");
-const loginutils = require("accounts-login.js")
 
 
 const getOAuth2Client = function () {
@@ -20,14 +19,14 @@ const authorize = function (device) {
 };
 
 const getGoogleMailRedirectUrl = function () {
-    return loginutils.getOAuth2Client().generateAuthUrl({
+    return getOAuth2Client().generateAuthUrl({
         access_type: 'offline',
         scope: SCOPES
     });
 };
 
 const loginGoogleMailKey = async function (tokenCode) {
-    let oAuth2Client = loginutils.getOAuth2Client();
+    let oAuth2Client = getOAuth2Client();
     let {tokens} = await oAuth2Client.getToken(tokenCode);
     let device = await deviceDao.searchDevice("mail");
     if (!device) {
@@ -49,7 +48,7 @@ const fetchGoogleMailContent = async function () {
     if (!device) {
         // do nothing
     } else {
-        let oAuth2Client = loginutils.authorize(device);
+        let oAuth2Client = authorize(device);
         await oAuth2Client.refreshAccessToken()
         let gmail = google.gmail({version: 'v1', auth: oAuth2Client});
         
@@ -62,7 +61,7 @@ const fetchGoogleMailContent = async function () {
                 gmail.users.messages.list({
                     userId: 'me',
                     pageToken : nextPageToken,
-                    q : 'after'+device.lastSynced,
+                    q : 'after:'+device.lastSynced,
                 }, (err, res) => {
                     if (err) {
                         reject(err);
@@ -84,7 +83,7 @@ const fetchGoogleMailContent = async function () {
                         if (err) {
                             reject(err);
                         } else {
-                            resolve(res.data.headers);
+                            resolve(res.data.payload.headers);
                         }
                     });
                 });
@@ -100,7 +99,8 @@ const fetchGoogleMailContent = async function () {
                     owner: device.id
                 });
             }
-            await searchableDao.makeSearchable(newmessages);
+            if (newmessages.length > 0)
+                await searchableDao.makeSearchable(newmessages);
             newmessages = [];
         } while (nextPageToken);
 

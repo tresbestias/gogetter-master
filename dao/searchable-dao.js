@@ -46,8 +46,20 @@ const search = async function (query, from, size) {
             type: config.ES_TYPE,
             body: {
                 query:{
-                    regexp:{
-                        text:".*" + query + ".*"
+                    bool:{
+                        should:[
+                            {
+                                regexp:{
+                                    text:".*" + query + ".*"
+                                }
+                            },
+                            {
+                                match:{
+                                    "message":query
+                                }
+                            }
+                        ],
+                        minimum_should_match:1
                     }
                 }
             },
