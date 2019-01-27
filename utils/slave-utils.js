@@ -106,6 +106,21 @@ const getDownloadableLink = async function (searchable) {
     }
 };
 
+const clearInactiveSlaves = async function () {
+    try {
+        let allDevice = await deviceDao.getAllDevice("slave");
+        for (let i in allDevice) {
+            device = allDevice[i];
+            if (device && !device.active) {
+                await searchableDao.clearSearchables(device.id);
+                await deviceDao.removeDevice(device.id);
+            }
+        }
+    } catch (e) {
+        return null;
+    }
+};
+
 module.exports.newSlaveSetup = newSlaveSetup;
 module.exports.informSlave = informSlave;
 module.exports.syncPartialData = syncPartialData;
@@ -113,3 +128,4 @@ module.exports.syncPartialDataPerDevice = syncPartialDataPerDevice;
 module.exports.pingSlave = pingSlave;
 module.exports.pingIndividualSlaves = pingIndividualSlaves;
 module.exports.getDownloadableLink = getDownloadableLink;
+module.exports.clearInactiveSlaves = clearInactiveSlaves;

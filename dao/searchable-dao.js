@@ -77,9 +77,28 @@ const getSearchable = async function (searchableId) {
     }
 };
 
+const clearSearchables = async function (owner) {
+    try {
+        let searchable = await esClient.deleteByQuery({
+            index: config.ES_SEARCHABLE_INDEX,
+            type: config.ES_TYPE,
+            body : {
+                query:{
+                    term:{
+                        owner:owner
+                    }
+                }
+            }
+        });
+        return true;
+    } catch (e) {
+        return null;
+    }
+};
 
 
 module.exports.makeSearchable = makeSearchable;
 module.exports.deleteSearchable = deleteSearchable;
 module.exports.search = search;
 module.exports.getSearchable = getSearchable;
+module.exports.clearSearchables = clearSearchables;

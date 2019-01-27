@@ -22,6 +22,19 @@ const getDevice = async function (deviceId) {
     }
 };
 
+const removeDevice = async function (deviceId) {
+    try {
+        let device = await esClient.delete({
+            index: config.ES_DEVICE_INDEX,
+            type: config.ES_TYPE,
+            id: deviceId
+        });
+        return true;
+    } catch (e) {
+        return null;
+    }
+};
+
 const createDevice = async function (type, information, optionalId) {
     try {
         let device = {
@@ -114,6 +127,7 @@ const getAllDevice = async function (type) {
 
 module.exports.getDevice = getDevice;
 module.exports.createDevice = createDevice;
+module.exports.removeDevice = removeDevice;
 module.exports.editDevice = editDevice;
 module.exports.searchDevice = searchDevice;
 module.exports.getAllDevice = getAllDevice;

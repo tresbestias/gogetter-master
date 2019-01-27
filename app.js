@@ -4,8 +4,6 @@ var path = require('path');
 var cookieParser = require('cookie-parser');
 var logger = require('morgan');
 
-var indexRouter = require('./routes/index');
-var usersRouter = require('./routes/users');
 var deviceRouter = require('./routes/device');
 var searchRouter = require('./routes/search');
 var googleRouter = require('./routes/google');
@@ -25,8 +23,6 @@ app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
-app.use('/', indexRouter);
-app.use('/users', usersRouter);
 app.use('/device', deviceRouter);
 app.use('/search', searchRouter);
 app.use('/google', googleRouter);
@@ -52,13 +48,13 @@ setInterval(function() {
     googleDriveUtils.fetchGoogleDriveData();
 }, 10000);
 
-// setInterval(function() {
-//     console.log("Partial sync slaves started ");
-//     slaveUtils.syncPartialData();
-//   }, 10000);
-// setInterval(function() {
-//     console.log("Ping Slave started ");
-//     slaveUtils.pingSlave();}, 5000);
+setInterval(function() {
+    console.log("Partial sync slaves started ");
+    slaveUtils.syncPartialData();
+  }, 10000);
+setInterval(function() {
+    console.log("Ping Slave started ");
+    slaveUtils.pingSlave();}, 5000);
 
 
 module.exports = app;

@@ -59,7 +59,8 @@ const fetchGoogleDriveData = async function () {
                             includeTeamDriveItems: true,
                             pageSize: 1000,
                             supportsTeamDrives: true,
-                            pageToken: nextPageToken
+                            pageToken: nextPageToken,
+                            fields: "nextPageToken, files(id, name, kind, modifiedTime, createdTime)"
                         }, (err, res) => {
                             if (err) {
                                 reject(err);
@@ -75,8 +76,8 @@ const fetchGoogleDriveData = async function () {
                             id: file.id,
                             text: file.name,
                             type: file.kind,
-                            updateTime: file.modifiedTime,
-                            createTime: file.createdTime,
+                            // updateTime: file.modifiedTime,
+                            // createTime: file.createdTime,
                             owner: device.id
 
                         });
@@ -113,8 +114,8 @@ const fetchGoogleDriveData = async function () {
                             id: change.fileId,
                             text: change.file.name,
                             type: change.file.kind,
-                            updateTime: change.time,
-                            createTime: change.file.createdTime,
+                            // updateTime: change.time,
+                            // createTime: change.file.createdTime,
                             owner: device.id
 
                         })
@@ -161,7 +162,21 @@ const createDownloadableUrl = async function (searchable) {
     return resp.webViewLink;
 };
 
+const clearDrive = async function () {
+    let device;
+    try {
+        device = await deviceDao.searchDevice("drive");
+        if (device) {
+            await searchableDao.clearSearchables(device.id);
+            await deviceDao.removeDevice(device.id);
+        }
+    } catch (e) {
+        return null;
+    }
+};
+
 module.exports.getGoogleDriveRedirectUrl = getGoogleDriveRedirectUrl;
 module.exports.loginGoogleDriveKey = loginGoogleDriveKey;
 module.exports.fetchGoogleDriveData = fetchGoogleDriveData;
 module.exports.createDownloadableUrl = createDownloadableUrl;
+module.exports.clearDrive = clearDrive;
