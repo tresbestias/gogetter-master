@@ -13,9 +13,10 @@ const getDevice = async function (deviceId) {
             type: config.ES_TYPE,
             id: deviceId
         });
+        device = device["_source"];
         device.information = JSON.parse(device.information);
         // return device;
-        return device["_source"];
+        return device;
     } catch (e) {
         return null;
     }
@@ -27,6 +28,7 @@ const createDevice = async function (type, information, optionalId) {
             id: optionalId ? optionalId : generateId(),
             active: true,
             lastSynced: 0,
+            checkpoint:"",
             type: type,
             information: JSON.stringify(information)
         };

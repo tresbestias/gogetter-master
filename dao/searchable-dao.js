@@ -1,5 +1,5 @@
 const config = require("../config");
-const esClient = require("dao/internals/es-client");
+const esClient = require("./internals/es-client");
 
 const makeSearchable = async function (searchables) {
     try {
@@ -46,10 +46,8 @@ const search = async function (query, from, size) {
             type: config.ES_TYPE,
             body: {
                 query:{
-                    fuzzy:{
-                        text:{
-                            value:query
-                        }
+                    regexp:{
+                        text:".*" + query + ".*"
                     }
                 }
             },
@@ -69,7 +67,7 @@ const search = async function (query, from, size) {
 const getSearchable = async function (searchableId) {
     try {
         let searchable = await esClient.get({
-            index: config.ES_DEVICE_INDEX,
+            index: config.ES_SEARCHABLE_INDEX,
             type: config.ES_TYPE,
             id: searchableId
         });

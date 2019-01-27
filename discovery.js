@@ -13,10 +13,11 @@ server.bind(3001);
 server.on("message", async function (message, address) {
     // Create output message.
     var output = "Udp server receive message : " + message + "\n";
-    await slaveUtils.newSlaveSetup(address.address, message);
-    axios.get("http://" + address.address + ":8000/ping?device=" + deviceId);
-    // Print received message in stdout, here is log console.
     process.stdout.write(output);
+    let device = await slaveUtils.newSlaveSetup(address.address, message.toString());
+    await axios.get("http://" + address.address + ":8000/ping?device=" + device.id);
+    process.stdout.write("sent the id successfully");
+    // Print received message in stdout, here is log console.
 });
 
 // When udp server started and listening.
