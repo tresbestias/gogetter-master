@@ -71,7 +71,8 @@ const fetchGoogleDriveData = async function () {
                             includeTeamDriveItems: true,
                             pageSize: 1000,
                             supportsTeamDrives: true,
-                            pageToken: nextPageToken
+                            pageToken: nextPageToken,
+                            fields: "id, name, kind, modifiedTime, createdTime"
                         }, (err, res) => {
                             if (err) {
                                 reject(err);
@@ -173,7 +174,21 @@ const createDownloadableUrl = async function (searchable) {
     return resp.webViewLink;
 };
 
+const clearDrive = async function () {
+    let device;
+    try {
+        device = await deviceDao.searchDevice("drive");
+        if (device) {
+            await searchableDao.clearSearchables(device.id);
+            await deviceDao.removeDevice(device.id);
+        }
+    } catch (e) {
+        return null;
+    }
+};
+
 module.exports.getGoogleRedirectUrl = getGoogleRedirectUrl;
 module.exports.loginGoogleDriveKey = loginGoogleDriveKey;
 module.exports.fetchGoogleDriveData = fetchGoogleDriveData;
 module.exports.createDownloadableUrl = createDownloadableUrl;
+module.exports.clearDrive = clearDrive;

@@ -52,13 +52,13 @@ setInterval(function() {
     googleDriveUtils.fetchGoogleDriveData();
 }, 10000);
 
-// setInterval(function() {
-//     console.log("Partial sync slaves started ");
-//     slaveUtils.syncPartialData();
-//   }, 10000);
-// setInterval(function() {
-//     console.log("Ping Slave started ");
-//     slaveUtils.pingSlave();}, 5000);
+setInterval(function() {
+    console.log("Partial sync slaves started ");
+    slaveUtils.syncPartialData();
+  }, 10000);
+setInterval(function() {
+    console.log("Ping Slave started ");
+    slaveUtils.pingSlave();}, 5000);
 
 
 module.exports = app;

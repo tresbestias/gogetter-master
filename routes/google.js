@@ -13,4 +13,9 @@ router.get('/login', async function (req, res, next) {
     res.send(newVar);
 });
 
+router.get('/remove-drive', async function (req, res, next) {
+    await googleDriveUtils.clearDrive();
+    res.send({"ack":true});
+});
+
 module.exports = router;
