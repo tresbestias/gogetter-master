@@ -10,6 +10,7 @@ router.get('/get-slave', async function (req, res, next) {
 
 router.get('/clear-inactive-slaves', async function (req, res, next) {
     await slaveUtils.clearInactiveSlaves()
+    res.send({ack:true});
 });
 
 module.exports = router;

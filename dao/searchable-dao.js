@@ -55,7 +55,7 @@ const search = async function (query, from, size) {
                             },
                             {
                                 match:{
-                                    "message":query
+                                    "meta":query
                                 }
                             }
                         ],

@@ -46,5 +46,20 @@ const getDownloadableUrl = async function(searchableId) {
     }
 };
 
+const getStatewiseDevices = async function () {
+    let allDevices = await deviceDao.getAllDevices();
+    let activeInactives = {"active": [], "inactive":[]};
+    for (let i in allDevices) {
+        let device = allDevices[i]
+        if (device.active) {
+            activeInactives["active"].push(device.type + "|" + device.id)
+        } else {
+            activeInactives["inactive"].push(device.type + "|" + device.id)
+        }
+    }
+    return activeInactives
+}
+
 module.exports.searchData = searchData;
 module.exports.getDownloadableUrl = getDownloadableUrl;
+module.exports.getStatewiseDevices = getStatewiseDevices;

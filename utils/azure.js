@@ -17,7 +17,7 @@ let accessKey = '53c0a59f48f34afd89a7ab5af6277117';
 // a free trial access key, you should not need to change this region.
 let uri = 'centralus.api.cognitive.microsoft.com';
 let path = '/text/analytics/v2.0/keyPhrases';
-let get_key_phrases = function (documents) {
+let get_key_phrases = async function (documents) {
 
     
     let temp = {"id":1,text:documents};
@@ -34,7 +34,7 @@ let get_key_phrases = function (documents) {
         }
     };
     console.log(request_params);
-    let promise = new Promise((resolve,reject)=>{
+    let meta = await new Promise((resolve,reject)=>{
         let req = https.request (request_params,(response)=>{
             var data = '';
             response.on('data',function(body){
@@ -42,8 +42,12 @@ let get_key_phrases = function (documents) {
             })
             response.on('end',()=>{ 
                 jsonData = JSON.parse(data);
-                keyWords = jsonData['documents'][0]['keyPhrases'];
-                resolve(keyWords);
+                try {
+                    keyWords = jsonData['documents'][0]['keyPhrases'];
+                    resolve(keyWords);
+                } catch (e) {
+                    resolve([]);
+                }
             });
             response.on('error',()=>{reject(response.statusCode+'');});
         });
@@ -51,6 +55,6 @@ let get_key_phrases = function (documents) {
         req.end();
 
     });
-    return promise; 
+    return meta;
 }
 module.exports.get_key_phrases = get_key_phrases

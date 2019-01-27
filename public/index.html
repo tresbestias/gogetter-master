@@ -1,35 +1,114 @@
 <!DOCTYPE html>
+<meta charset="utf-8"/>
 <html>
 <head>
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <style>
-        .button {
-            padding: 37px 37px;
-            /*font-size: 24px;*/
-            /*text-align: center;*/
-            /*cursor: pointer;*/
-            /*outline: none;*/
-            /*color: #fff;*/
-            background-image: url('images/driveb.png');
-            background-size: 100% 100%;
-            /*border: none;*/
-            border-radius: 15px;
-            /*box-shadow: 0 9px #999;*/
-        }
+    <link href="//maxcdn.bootstrapcdn.com/bootstrap/4.1.1/css/bootstrap.min.css" rel="stylesheet" id="bootstrap-css">
+    <link rel='stylesheet' href='stylesheets/new.css'>
+    <script src="//maxcdn.bootstrapcdn.com/bootstrap/4.1.1/js/bootstrap.min.js"></script>
+    <!-- <script src="//cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script> -->
+    <script type="text/javascript" src="http://code.jquery.com/jquery-1.7.1.min.js"></script>
 
-        .button:hover {background-color: #3e8e41}
-
-        .button:active {
-            background-color: #3e8e41;
-            box-shadow: 0 5px #666;
-            transform: translateY(4px);
-        }
-    </style>
+    <title>Search Box</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.5.0/css/all.css" integrity="sha384-B4dIYHKNBt8Bc12p+WXckhzcICo0wtJAoU8YZTY5qE0Id1GSseTk6S+L3BlXeVIU" crossorigin="anonymous">
 </head>
+
+
+
 <body>
-
-<a href="/google/redirect-url"><button class="button"></button></a>
-<button class="button"></button>
-
+<div class="container">
+    <div id="search_top">
+        <div class="searchbar">
+            <input class="search_input" type="text" id="searchbox" name="" placeholder="Search...">
+            <a href="#" class="search_icon"><i class="fas fa-search"></i></a>
+        </div>
+    </div>
+    <table id="mytable" border="1" style="width:100%">
+        <tr>
+            <th>Text</th>
+            <th>Type</th>
+            <th>Active</th>
+            <th>Tags</th>
+        </tr>
+    </table>
+</div>
 </body>
+<div class="footer acontainer">
+    <div id="mail_login" style="width:50%">
+        <a href="/google/mail-redirect-url">Login to Mail</a>
+    </div>
+    <div id="drive_login" style="width:50%">
+        <a href="/google/drive-redirect-url">Login to Drive</a>
+    </div>
+</div>
+
+<script>
+    $('#searchbox').keypress(function(event){
+        // event.preventDefault()
+        // var value = $(this).value
+        if (event.which == 13) {
+            var value = $(this).context.value;
+            $(this).context.value = ""
+            var url = '/search/files?q='+value
+            console.log(url)
+            $.get(url, function (data) {
+                console.log(data);
+                // $('#search_top').remove();
+                $('#mytable').empty();
+                let header = "        <tr>\n" +
+                "            <th>Text</th>\n" +
+                "            <th>Type</th>\n" +
+                "            <th>Active</th>\n" +
+                "            <th>Tags</th>\n" +
+                "        </tr>\n";
+                $('#mytable').append(header)
+                for ( var i in data) {
+                    var obj = data[i];
+                    var clickableText = "<a href='/search/file/get?id=" + obj.id + "'>" + obj.text + "</a>";
+                    let dom = "<tr>\n" +
+                    "<td>" + clickableText + "</td>\n" +
+                    "<td>" + obj.type + "</td>\n" +
+                    "<td>" + (obj.owner.active ? "active" : "inactive") + "</td>\n" +
+                    "<td>" + (obj.meta ? obj.meta.join(",") : "") + "</td>\n" +
+                    "</tr>";
+                    $('#mytable').append(dom)
+                }
+                $('#mytable').show()
+                // document.getElementById("mytable").className = "show"
+            })
+        }
+    })
+
+    function load() {
+        $.get("/search/devices", function (data) {
+            var found_mail = false;
+            var found_drive = false;
+            for ( var i in data.active) {
+                var obj = data.active[i];
+
+                if (obj.startsWith("mail")) {
+                    found_mail = true;
+                }
+                else if (obj.startsWith("drive")) {
+                    found_drive = true;
+                }
+            }
+            if (found_mail) {
+                $('#mail_login').html("<a href='/google/remove-mail'>Logout from Mail</a>")
+            } else {
+                $('#mail_login').html("<a href='/google/mail-redirect-url'>Login to Mail</a>")
+
+            }
+
+            if (found_drive) {
+                $('#drive_login').html("<a href='/google/remove-drive'>Logout from Drive</a>")
+            } else {
+                $('#drive_login').html("<a href='/google/drive-redirect-url'>Login to Drive</a>")
+            }
+        });
+    }
+
+    load()
+    setInterval(load, 5000);
+</script>
 </html>

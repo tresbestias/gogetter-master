@@ -16,4 +16,9 @@ router.get('/file/get', async function (req, res, next) {
     res.redirect(url);
 });
 
+router.get('/devices', async function (req, res, next) {
+    let allDevices = await getUtils.getStatewiseDevices();
+    res.send(allDevices);
+});
+
 module.exports = router;

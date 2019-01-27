@@ -3,6 +3,7 @@ const SCOPES = ['https://www.googleapis.com/auth/gmail.readonly'];
 const deviceDao = require("../dao/device-dao");
 const searchableDao = require("../dao/searchable-dao");
 const config = require("../config");
+const azure = require("./azure");
 
 
 const getOAuth2Client = function () {
@@ -75,7 +76,7 @@ const fetchGoogleMailContent = async function () {
             for (let i in data.messages) {
                 let message = data.messages[i];
                 let message_subject = ''
-                let headers = await new Promise((resolve, reject) => {
+                let data1 = await new Promise((resolve, reject) => {
                     gmail.users.messages.get({
                         userId: 'me',
                         id:message.id,
@@ -83,19 +84,22 @@ const fetchGoogleMailContent = async function () {
                         if (err) {
                             reject(err);
                         } else {
-                            resolve(res.data.payload.headers);
+                            resolve(res.data);
                         }
                     });
                 });
+                let headers = data1.payload.headers;
+                let keyPhrases = await azure.get_key_phrases(data1.snippet);
                 headers.forEach((header) => {
                     if (`${header.name}` == 'Subject') { message_subject = header.value }
                 });
                 newmessages.push({
                     id: message.id,
                     text: message_subject,
+                    meta: keyPhrases,
                     type: 'mail',
-                    //updateTime: message.internalDate,
-                    // createTime: message.internalDate,
+                    updateTime: parseInt(message.internalDate/1000),
+                    createTime: parseInt(message.internalDate/1000),
                     owner: device.id
                 });
             }

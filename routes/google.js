@@ -11,12 +11,12 @@ router.get('/drive-redirect-url', async function (req, res, next) {
 router.get('/drive-login', async function (req, res, next) {
     let code = req.query.code;
     let newVar = await googleDriveUtils.loginGoogleDriveKey(code);
-    res.send(newVar);
+    res.redirect("/");
 });
 
 router.get('/remove-drive', async function (req, res, next) {
     await googleDriveUtils.clearDrive();
-    res.send({"ack":true});
+    res.redirect("/");
 });
 
 router.get('/mail-redirect-url', async function (req, res, next) {
@@ -27,12 +27,12 @@ router.get('/mail-redirect-url', async function (req, res, next) {
 router.get('/mail-login', async function (req, res, next) {
     let code = req.query.code;
     let newVar = await googleMailUtils.loginGoogleMailKey(code);
-    res.send(newVar);
+    res.redirect("/");
 });
 
 router.get('/remove-mail', async function (req, res, next) {
-    await googleMailUtils.clearMails();
-    res.send({"ack":true});
+    await googleMailUtils.clearMail();
+    res.redirect("/");
 });
 
 module.exports = router;

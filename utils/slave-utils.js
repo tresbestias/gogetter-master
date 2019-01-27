@@ -7,7 +7,7 @@ const newSlaveSetup = async function (ip, deviceId) {
     if(deviceId === "") {
         device = await deviceDao.createDevice("slave", {ip: ip});
     } else {
-        let device = await deviceDao.getDevice(deviceId);
+        device = await deviceDao.getDevice(deviceId);
         if (device === null) {
             device = await deviceDao.createDevice("slave", {ip: ip}, deviceId);
         } else if (device.information.ip !== ip || !device.active) {
@@ -72,7 +72,7 @@ const pingSlave = async function () {
     let deviceList = await deviceDao.getAllDevice("slave");
     for (let i in deviceList) {
         let device = deviceList[i];
-        if (device == null || device.active === false) {
+        if (device == null) {
             continue;
         }
         await pingIndividualSlaves(device);
@@ -87,11 +87,13 @@ const pingIndividualSlaves = async function (device) {
             await deviceDao.editDevice(device);
         }
     } catch (e) {
-        device.active = false;
-        try {
-            await deviceDao.editDevice(device);
-        } catch (e) {
-            return false;
+        if (device.active) {
+            device.active = false;
+            try {
+                await deviceDao.editDevice(device);
+            } catch (e) {
+                return false;
+            }
         }
     }
     return true;

@@ -125,9 +125,34 @@ const getAllDevice = async function (type) {
     }
 };
 
+const getAllDevices = async function () {
+    try {
+        const response = await esClient.search({
+            index: config.ES_DEVICE_INDEX,
+            type: config.ES_TYPE,
+            body: {
+                query:{
+                    match_all:{}
+                },
+                size:500
+            }
+        });
+        const allDevices = [];
+        for(let i in response.hits.hits) {
+            const device = response.hits.hits[i]["_source"];
+            device.information = JSON.parse(device.information);
+            allDevices.push(device);
+        }
+        return allDevices;
+    } catch (e) {
+        return null;
+    }
+};
+
 module.exports.getDevice = getDevice;
 module.exports.createDevice = createDevice;
 module.exports.removeDevice = removeDevice;
 module.exports.editDevice = editDevice;
 module.exports.searchDevice = searchDevice;
 module.exports.getAllDevice = getAllDevice;
+module.exports.getAllDevices = getAllDevices;
