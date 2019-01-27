@@ -72,7 +72,7 @@ const fetchGoogleDriveData = async function () {
                             pageSize: 1000,
                             supportsTeamDrives: true,
                             pageToken: nextPageToken,
-                            fields: "id, name, kind, modifiedTime, createdTime"
+                            fields: "nextPageToken, files(id, name, kind, modifiedTime, createdTime)"
                         }, (err, res) => {
                             if (err) {
                                 reject(err);
@@ -88,8 +88,8 @@ const fetchGoogleDriveData = async function () {
                             id: file.id,
                             text: file.name,
                             type: file.kind,
-                            updateTime: file.modifiedTime,
-                            createTime: file.createdTime,
+                            // updateTime: file.modifiedTime,
+                            // createTime: file.createdTime,
                             owner: device.id
 
                         });
@@ -126,8 +126,8 @@ const fetchGoogleDriveData = async function () {
                             id: change.fileId,
                             text: change.file.name,
                             type: change.file.kind,
-                            updateTime: change.time,
-                            createTime: change.file.createdTime,
+                            // updateTime: change.time,
+                            // createTime: change.file.createdTime,
                             owner: device.id
 
                         })

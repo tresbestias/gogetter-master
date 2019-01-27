@@ -4,7 +4,7 @@ const googleDriveUtils = require("./../utils/google-drive-utils");
 
 router.get('/redirect-url', async function (req, res, next) {
     let newVar = googleDriveUtils.getGoogleRedirectUrl();
-    res.send(newVar);
+    res.redirect(newVar);
 });
 
 router.get('/login', async function (req, res, next) {
