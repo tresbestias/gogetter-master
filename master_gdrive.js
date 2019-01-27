@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-state_holder = 'sync'
+state_holder = 'queried'
 state_list = ['queried','selected','add_new','del','sync']
 // [START drive_quickstart]
 const fs = require('fs');
@@ -55,7 +55,6 @@ function action_redirect(auth) {
     }
 }
 
-
 /**
  * Create an OAuth2 client with the given credentials, and then execute the
  * given callback function.
@@ -71,6 +70,11 @@ function authorize(credentials, callback) {
   fs.readFile(TOKEN_PATH, (err, token) => {
     if (err) return getAccessToken(oAuth2Client, callback);
     oAuth2Client.setCredentials(JSON.parse(token));
+    //console.log(oAuth2Client.getExpiresInSeconds())
+    console.log(oAuth2Client.isTokenExpiring())
+    if(oAuth2Client.isTokenExpiring()){
+        oAuth2Client.refreshToken()
+    }
     callback(oAuth2Client);
   });
 }
