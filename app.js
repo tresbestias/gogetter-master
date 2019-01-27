@@ -9,6 +9,7 @@ var searchRouter = require('./routes/search');
 var googleRouter = require('./routes/google');
 var slaveUtils = require('./utils/slave-utils');
 var googleDriveUtils = require('./utils/google-drive-utils');
+var googleMailUtils = require('./utils/google-mail-utils');
 require("./discovery");
 
 var app = express();
@@ -46,6 +47,11 @@ app.use(function(err, req, res, next) {
 setInterval(function() {
     console.log("Partial sync google drive started ");
     googleDriveUtils.fetchGoogleDriveData();
+}, 10000);
+
+setInterval(function() {
+    console.log("Partial sync google mail started ");
+    googleMailUtils.fetchGoogleMailContent();
 }, 10000);
 
 setInterval(function() {

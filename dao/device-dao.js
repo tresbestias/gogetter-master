@@ -40,7 +40,7 @@ const createDevice = async function (type, information, optionalId) {
         let device = {
             id: optionalId ? optionalId : generateId(),
             active: true,
-            lastSynced: 0,
+            lastSynced: 1547987069,
             checkpoint:"",
             type: type,
             information: JSON.stringify(information)

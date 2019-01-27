@@ -6,16 +6,28 @@ const config = require("../config");
 const loginutils = require("accounts-login.js")
 
 
+const getOAuth2Client = function () {
+    const {client_secret, client_id} = config.GMAIL_CREDENTIALS;
+    const oAuth2Client = new google.auth.OAuth2(
+        client_id, client_secret, "http://localhost:3000/google/mail-login");
+    return oAuth2Client;
+};
+
+const authorize = function (device) {
+    const oAuth2Client = getOAuth2Client();
+    oAuth2Client.setCredentials(device.information.auth);
+    return oAuth2Client;
+};
 
 const getGoogleMailRedirectUrl = function () {
-    return loginutils.getOAuth2Client(config.GOOGLE_CREDENTIALS).generateAuthUrl({
+    return loginutils.getOAuth2Client().generateAuthUrl({
         access_type: 'offline',
         scope: SCOPES
     });
 };
 
 const loginGoogleMailKey = async function (tokenCode) {
-    let oAuth2Client = loginutils.getOAuth2Client(config.GMAIL_CREDENTIALS);
+    let oAuth2Client = loginutils.getOAuth2Client();
     let {tokens} = await oAuth2Client.getToken(tokenCode);
     let device = await deviceDao.searchDevice("mail");
     if (!device) {
@@ -24,27 +36,33 @@ const loginGoogleMailKey = async function (tokenCode) {
         device.information = {auth:tokens};
         device.active = true;
         device.checkpoint = "";
+        device.lastSynced = 1547987069;
         await deviceDao.editDevice(device);
     }
     return device;
 };
 
 
-const fetchGoogleMailContent = async function (last_synced_date) {
+const fetchGoogleMailContent = async function () {
     let device;
     device = await deviceDao.searchDevice("mail");
     if (!device) {
         // do nothing
     } else {
-        let oAuth2Client = loginutils.authorize(device,config.GMAIL_CREDENTIALS);
+        let oAuth2Client = loginutils.authorize(device);
         await oAuth2Client.refreshAccessToken()
         let gmail = google.gmail({version: 'v1', auth: oAuth2Client});
         
-        let newmessages = []
-        if (!device.checkpoint) {
+        let newmessages = [];
+        let currTime = parseInt(Date.now()/1000);
+
+        let nextPageToken;
+        do {
             let data = await new Promise((resolve, reject) => {
                 gmail.users.messages.list({
                     userId: 'me',
+                    pageToken : nextPageToken,
+                    q : 'after'+device.lastSynced,
                 }, (err, res) => {
                     if (err) {
                         reject(err);
@@ -54,70 +72,11 @@ const fetchGoogleMailContent = async function (last_synced_date) {
                 });
             });
 
-            let nextPageToken = data.nextPageToken;
-            do {
-                for (let i in data.messages) {
-                    let message = data.messages[i];
-                    let message_subject = ''
-                    let headers = await new Promise((resolve, reject) => {
-                        gmail.users.messages.get({
-                            userId: 'me',
-                            id:message.id,
-                        }, (err, res) => {
-                            if (err) {
-                                reject(err);
-                            } else {
-                                resolve(res.data.headers);
-                            }
-                        });
-                    });
-                    headers.forEach((header) => {
-                        if (`${header.name}` == 'Subject') { message_subject = header.value }
-                    });
-                    newmessages.push({
-                        id: message.id,
-                        text: message_subject,
-                        type: 'mail',
-                        //updateTime: message.internalDate,
-                        createTime: message.internalDate,
-                        owner: device.id
-                    });
-                }
-                let data = await new Promise((resolve, reject) => {
-                    gmail.users.messages.list({
-                        userId: 'me',
-                        pageToken = nextPageToken,
-                    }, (err, res) => {
-                        if (err) {
-                            reject(err);
-                        } else {
-                            resolve(res.data);
-                        }
-                    });
-                });
-                await searchableDao.makeSearchable(newmessages);
-                newmessages = [];
-            } while (nextPageToken);
-        } else {
-            if (!last_synced_date) return
-            let recent_mails = await new Promise((resolve, reject) => {
-                gmail.users.messages.list({
-                    userId: 'me',
-                    pageToken : device.checkpoint,
-                    q : 'after'+last_synced_date.toString()
-                }, (err, res) => {
-                    if (err) {
-                        reject(err);
-                    } else {
-                        resolve(res.data);
-                    }
-                });
-            });
-
-            for (let i in recent_mails.messages) {
-                let message = recent_mails.messages[i];
+            nextPageToken = data.nextPageToken;
+            for (let i in data.messages) {
+                let message = data.messages[i];
                 let message_subject = ''
-                let recent_headers = await new Promise((resolve, reject) => {
+                let headers = await new Promise((resolve, reject) => {
                     gmail.users.messages.get({
                         userId: 'me',
                         id:message.id,
@@ -129,7 +88,7 @@ const fetchGoogleMailContent = async function (last_synced_date) {
                         }
                     });
                 });
-                recent_headers.forEach((header) => {
+                headers.forEach((header) => {
                     if (`${header.name}` == 'Subject') { message_subject = header.value }
                 });
                 newmessages.push({
@@ -137,11 +96,17 @@ const fetchGoogleMailContent = async function (last_synced_date) {
                     text: message_subject,
                     type: 'mail',
                     //updateTime: message.internalDate,
-                    createTime: message.internalDate,
+                    // createTime: message.internalDate,
                     owner: device.id
                 });
             }
-        }
+            await searchableDao.makeSearchable(newmessages);
+            newmessages = [];
+        } while (nextPageToken);
+
+        device.lastSynced = currTime;
+        await deviceDao.editDevice(device);
+
     }
 
 };
@@ -159,7 +124,8 @@ const clearMail = async function () {
     }
 };
 
-
+module.exports.getOAuth2Client = getOAuth2Client;
+module.exports.authorize = authorize;
 module.exports.fetchGoogleMailContent = fetchGoogleMailContent;
 module.exports.getGoogleMailRedirectUrl = getGoogleMailRedirectUrl;
 module.exports.loginGoogleMailKey = loginGoogleMailKey;
