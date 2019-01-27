@@ -1,20 +1,41 @@
-let deviceUtils = require("utils/device-utils");
+const deviceDao = require("../dao/device-dao");
+const searchableDao = require("../dao/searchable-dao");
 
-let addGoogleDriveKey = async function (key, email) {
-    let device = await deviceUtils.searchDeviceByType("Drive");
-    if (device == null) {
-        // create
+const addGoogleDriveKey = async function (key, email) {
+    let device = await deviceDao.searchDevice("drive");
+    if (device === null) {
+        await deviceDao.createDevice("drive", {"key":key, "email":email});
     } else {
-        // edit
+        device.information = {"key":key, "email":email};
+        device.active = true;
+        await deviceDao.editDevice(device);
     }
     return device;
 };
 
-let fetchGoogleDriveData = async function (deviceId, afterTime) {
-    if (afterTime == null) {
-        // full sync
+const fetchGoogleDriveData = async function (deviceId) {
+    let device;
+    try {
+        device = await deviceDao.getDevice(deviceId);
+        if (device.active === false) {
+            // do something
+        } else {
+            // fetch again
+        }
+    } catch (e) {
+        if (device) {
+            device.active = false;
+            await deviceDao.editDevice(device);
+        }
+    }
+};
+
+const createGoogleUrl = async function (searchableId) {
+    let searchable = await searchableDao.getSearchable(searchableId);
+    if (searchable != null) {
+
     } else {
-        // partial sync
+        return null;
     }
 };
 
