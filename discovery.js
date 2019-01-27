@@ -4,15 +4,17 @@ const axios = require("axios")
 
 // Create udp server socket object.
 var server = dgram.createSocket("udp4");
+var slaveUtils = require("./utils/slave-utils");
 
 // Make udp server listen on port 8089.
 server.bind(3001);
 
 // When udp server receive message.
-server.on("message", function (message, a, b) {
+server.on("message", async function (message, address) {
     // Create output message.
     var output = "Udp server receive message : " + message + "\n";
-    axios.get("http://" + a.address + ":8000/ping");
+    await slaveUtils.newSlaveSetup(address.address, message);
+    axios.get("http://" + address.address + ":8000/ping?device=" + deviceId);
     // Print received message in stdout, here is log console.
     process.stdout.write(output);
 });

@@ -21,10 +21,10 @@ const getDevice = async function (deviceId) {
     }
 };
 
-const createDevice = async function (type, information) {
+const createDevice = async function (type, information, optionalId) {
     try {
         let device = {
-            id: generateId(),
+            id: optionalId ? optionalId : generateId(),
             active: true,
             lastSynced: 0,
             type: type,

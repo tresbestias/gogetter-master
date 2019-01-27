@@ -3,17 +3,21 @@ const deviceDao = require("../dao/device-dao");
 const searchableDao = require("../dao/searchable-dao");
 
 const newSlaveSetup = async function (ip, deviceId) {
+    let device;
     if(deviceId === "") {
-        await deviceDao.createDevice("slave", {ip: ip});
+        device = await deviceDao.createDevice("slave", {ip: ip});
     } else {
         let device = await deviceDao.getDevice(deviceId);
-        if (device.information.ip !== ip || !device.active) {
+        if (device === null) {
+            device = await deviceDao.createDevice("slave", {ip: ip}, deviceId);
+        } else if (device.information.ip !== ip || !device.active) {
             device.information.ip = ip;
             device.active = true;
             await deviceDao.editDevice(device);
         }
     }
-    await informSlave(device)
+    await informSlave(device);
+    return device;
 };
 
 const informSlave = async function (device) {

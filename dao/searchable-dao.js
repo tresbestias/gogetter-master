@@ -34,13 +34,37 @@ const deleteSearchable = async function (ids) {
     }
 };
 
-const search = async function (query) {
-    try {
-
-    } catch (e) {
-        return [];
+const search = async function (query, from, size) {
+    if (!from) {
+        from = 0; size = 25;
+    } else if (!size) {
+        size = 25;
     }
-};
+    try {
+        const response = await esClient.search({
+            index: config.ES_SEARCHABLE_INDEX,
+            type: config.ES_TYPE,
+            body: {
+                query:{
+                    fuzzy:{
+                        text:{
+                            value:query
+                        }
+                    }
+                }
+            },
+            from:from,
+            size:size
+        });
+        const allSearchables = [];
+        for(let i in response.hits.hits) {
+            const searchable = response.hits.hits[i]["_source"];
+            allSearchables.push(searchable);
+        }
+        return allSearchables;
+    } catch (e) {
+        return null;
+    }};
 
 const getSearchable = async function (searchableId) {
     try {

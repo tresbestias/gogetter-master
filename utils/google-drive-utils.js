@@ -13,12 +13,12 @@ const addGoogleDriveKey = async function (key, email) {
     return device;
 };
 
-const fetchGoogleDriveData = async function (deviceId) {
+const fetchGoogleDriveData = async function () {
     let device;
     try {
-        device = await deviceDao.getDevice(deviceId);
-        if (device.active === false) {
-            // do something
+        device = await deviceDao.searchDevice("drive");
+        if (!device || device.active === false) {
+            // do nothing
         } else {
             // fetch again
         }
@@ -33,7 +33,8 @@ const fetchGoogleDriveData = async function (deviceId) {
 const createGoogleUrl = async function (searchableId) {
     let searchable = await searchableDao.getSearchable(searchableId);
     if (searchable != null) {
-
+        let device = await deviceDao.getDevice(searchable.owner);
+        // make google whatever
     } else {
         return null;
     }
